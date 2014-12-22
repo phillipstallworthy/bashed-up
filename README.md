@@ -6,7 +6,7 @@ A small collection of bash scripts that I find useful and want to keep.
 mlinks.sh
 ----------
 
-A small utility to help when creating symbolic links 
+A utility to help when creating symbolic links 
 
 ### Example
 
