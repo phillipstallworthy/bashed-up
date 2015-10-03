@@ -53,8 +53,17 @@ destination=links_tmp
 # TODO: this is the only place that uses links_tmp rather than destination
 # TODO: also needs to work with source
 echo finding and linking files
-find -type f -name *.jpg -print0 | xargs -0 bash -c 'mkdir -p links_tmp; for filename; do ln --backup=numbered -s "../$filename" "./links_tmp/"; done;' bash
-find -type f -name *.JPG -print0 | xargs -0 bash -c 'mkdir -p links_tmp; for filename; do ln --backup=numbered -s "../$filename" "./links_tmp/"; done;' bash
+
+files=("JPG","3gp","wmv","swf","MPG","AVI","MOV","jpg","GIF","mpg","tif","gif","bmp","MP4","jpeg")
+
+for file in "${files[@]}"; do echo $file; done
+
+for file in "${files[@]}"; do
+find -type f -name *.3gp -print0 | xargs -0 bash -c 'mkdir -p links_tmp; for filename; do ln --backup=numbered -s "../$filename" "./links_tmp/"; done;'
+;done
+
+#find -type f -name *.jpg -print0 | xargs -0 bash -c 'mkdir -p links_tmp; for filename; do ln --backup=numbered -s "../$filename" "./links_tmp/"; done;' bash
+#find -type f -name *.JPG -print0 | xargs -0 bash -c 'mkdir -p links_tmp; for filename; do ln --backup=numbered -s "../$filename" "./links_tmp/"; done;' bash
 
 echo Renaming links
 # Iterate and rename the links created
