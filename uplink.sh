@@ -39,14 +39,25 @@ done
 # need a better way to error with no args.
 shift $((OPTIND - 1))
 
+# override the parameter for now, see TODO:
+destination=links_tmp
+echo removing and recreating $destination directory
+rm --recursive --force $destination
+mkdir --parents --verbose $destination
+#echo $source $destination
+
 # find all files and count file types
 # http://stackoverflow.com/questions/14514535/how-can-i-count-the-different-file-types-within-a-folder-using-linux-terminal
 # find ./ -type f |awk -F . '{print $NF}' | sort | awk '{count[$1]++}END{for(j in count) print j,"("count[j]" occurences)"}'
 # find -type f -name *.jpeg -print
 
-# override the parameter for now, see TODO:
-destination=links_tmp
-#echo $source $destination
+images=("JPG" "3gp" "wmv" "swf" "MPG" "AVI" "MOV" "jpg" "GIF" "mpg" "tif" "gif" "bmp" "MP4" "jpeg")
+
+# find the files and make links
+echo count the orginals
+for ext in "${images[@]}"; do
+find ./ -type f -name *.$ext |awk -F . '{print $NF}' | sort | awk '{count[$1]++}END{for(j in count) print j,"("count[j]" occurences)"}' ;
+done
 
 # find all image files below this location
 # and make a link to them in a directory
@@ -54,16 +65,10 @@ destination=links_tmp
 # TODO: also needs to work with source
 echo finding and linking files
 
-files=("JPG","3gp","wmv","swf","MPG","AVI","MOV","jpg","GIF","mpg","tif","gif","bmp","MP4","jpeg")
+for ext in "${images[@]}"; do
+find -type f -name *.$ext -exec ln --backup=numbered -s ../'{}' ./links_tmp/ \;
+done
 
-for file in "${files[@]}"; do echo $file; done
-
-for file in "${files[@]}"; do
-find -type f -name *.3gp -print0 | xargs -0 bash -c 'mkdir -p links_tmp; for filename; do ln --backup=numbered -s "../$filename" "./links_tmp/"; done;'
-;done
-
-#find -type f -name *.jpg -print0 | xargs -0 bash -c 'mkdir -p links_tmp; for filename; do ln --backup=numbered -s "../$filename" "./links_tmp/"; done;' bash
-#find -type f -name *.JPG -print0 | xargs -0 bash -c 'mkdir -p links_tmp; for filename; do ln --backup=numbered -s "../$filename" "./links_tmp/"; done;' bash
 
 echo Renaming links
 # Iterate and rename the links created
@@ -73,14 +78,14 @@ for filename in ./$destination/*.*; do
     #base=`basename $filename`
     base=${filename##*/}
 
-    # remove the extension twice to deal with double extensions
+    # remove the  twice to deal with double s
     nameOnly=${base%.*}
     nameOnly=${nameOnly%.*}
 
     extension=${filename##*.}
     directory=`dirname $filename`
 
-    #echo filename=$filename base=$base name=$nameOnly ext=$extension dir=$directory
+    # echo filename=$filename base=$base name=$nameOnly ext=$extension dir=$directory
 
     # check the length of the number in the extension
     # ~1~ = 1
@@ -95,16 +100,24 @@ for filename in ./$destination/*.*; do
     if [[ $extension =~ $regex2 ]]
     then length=2
     fi
-    #echo $length
+    # echo $length
 
     # Extract the string number from the extension
     number=`expr substr $extension 2 $length`
-    #echo number string = $number
+    # echo number string = $number
 
-    # move the file to a better named one.
+    # move the file to a better named one that works as a image file.
     # 0009.jpg.~3~ -> 00009_3.jpg
     if [[ $number != "" ]]
-    then mv  $filename $directory/$nameOnly"_"$number.jpg
+    then
+    TODO: get the real extention
+    echo mv $filename $directory/$nameOnly"_"$number.jpg
+    mv $filename $directory/$nameOnly"_"$number.jpg
     fi
 done
 echo .
+
+echo count the links
+for ext in "${images[@]}"; do
+find ./links_tmp -type l -name *.$ext |awk -F . '{print $NF}' | sort | awk '{count[$1]++}END{for(j in count) print j,"("count[j]" occurences)"}' ;
+done
