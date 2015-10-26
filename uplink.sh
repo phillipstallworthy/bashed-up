@@ -19,8 +19,11 @@
 # TODO: make the source and destination parameters
 # work correctly, so that it can be run from anywhere.
 
+echo "" > uplink.log
+
 source=
 destination=
+
 
 # http://stackoverflow.com/questions/12036445/bash-command-line-arguments
 while getopts s:d: opt; do
@@ -72,47 +75,60 @@ done
 
 echo Renaming links
 # Iterate and rename the links created
+regex1='~[0-9]~'
+regex2='~[0-9][0-9]~'
+regex_any='~[0-9]+~'
+
 for filename in ./$destination/*.*; do
 
     echo -n .
-    #base=`basename $filename`
+
     base=${filename##*/}
-
-    # remove the  twice to deal with double s
-    nameOnly=${base%.*}
-    nameOnly=${nameOnly%.*}
-
     extension=${filename##*.}
-    directory=`dirname $filename`
+    name_image_type=""
+    backup_extension=""
+    name_only=""
+    image_extention=""
 
-    # echo filename=$filename base=$base name=$nameOnly ext=$extension dir=$directory
+    if [[ $extension =~ $regex_any ]]
+    then
+      name_image_type=${base%.*}
+      backup_extension=$extension
+      name_only=${name_image_type%.*}
+      image_extention=${name_image_type##*.}
+    else
+      name_only=${base%.*}
+      image_extention=$extension
+    fi
+    directory=`dirname "$filename"`
 
-    # check the length of the number in the extension
-    # ~1~ = 1
-    # ~10~ = 2
+    echo filename=$filename base=$base name=$name_only backup_extension=$backup_extension image_extention=$image_extention dir=$directory >> uplink.log
+
+    # check the length of the number in the extension IE ~1~ = 1 and ~10~ = 2
     length=0
-    regex1='~[0-9]~'
-    regex2='~[0-9][0-9]~'
-    if [[ $extension =~ $regex1 ]]
+
+    if [[ $backup_extension =~ $regex1 ]]
     then length=1
     fi
 
-    if [[ $extension =~ $regex2 ]]
+    if [[ $backup_extension =~ $regex2 ]]
     then length=2
     fi
     # echo $length
 
     # Extract the string number from the extension
-    number=`expr substr $extension 2 $length`
+    number=""
+    if [[ $backup_extension != "" ]]
+    then number=`expr substr $backup_extension 2 $length`
+    fi
     # echo number string = $number
 
     # move the file to a better named one that works as a image file.
-    # 0009.jpg.~3~ -> 00009_3.jpg
+    # 0009.jpg.~3~ > 00009_3.jpg
     if [[ $number != "" ]]
     then
-    TODO: get the real extention
-    echo mv $filename $directory/$nameOnly"_"$number.jpg
-    mv $filename $directory/$nameOnly"_"$number.jpg
+    echo mv $filename $directory/$name_only"_"$number.$image_extention >> uplink.log
+    mv "$filename" "$directory"/"$name_only"_"$number"."$image_extention"
     fi
 done
 echo .
